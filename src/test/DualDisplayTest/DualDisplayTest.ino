@@ -1,34 +1,30 @@
-#include <Arduino.h>
+#include <Wire.h> 
 #include <U8g2lib.h>
-#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-// 初始化LCD12864
-U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, /* clock=*/ 4, /* data=*/ 3, /* cs=*/ 2);
+// 设置I2C地址为0x27，16列2行
+LiquidCrystal_I2C lcd(0x27, 16, 2);  
 
-// 初始化LCD1602
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-
-void setup() {
-  // 启动LCD12864
+// CLK = 4, MOSI = 3, CS = 2
+U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, /* clock=*/4, /* data=*/3, /* cs=*/2);
+ 
+void setup()
+{
   u8g2.begin();
-
-  // 启动LCD1602
-  lcd.begin(16, 2);
-  lcd.backlight();
+  lcd.init();                // 初始化LCD
+  lcd.backlight();           // 打开背光
+  lcd.setCursor(0,0);       // 将光标设置到第一行第一列
+  lcd.print("Hello, world!");  // 在LCD上打印"Hello, world!"
 }
-
+ 
 void loop() {
-  // 在LCD12864上显示文字
-  u8g2.firstPage();
-  do {
-    u8g2.setFont(u8g2_font_ncenB14_tr);
-    u8g2.drawStr(0,24,"Hello, LCD12864!");
-  } while ( u8g2.nextPage() );
-
-  // 在LCD1602上显示文字
-  lcd.setCursor(0, 0);
-  lcd.print("Hello, LCD1602!");
-  
-  delay(1000);
+	u8g2.firstPage();
+	do {
+		u8g2.setFont(u8g2_font_ncenB08_tr);	 // 选择字体
+		u8g2.drawStr(0, 24, "Hello, world!");  // 在坐标(0,24)处开始写入文本
+	} while (u8g2.nextPage());
+	delay(1000);
 }
+
+
+

@@ -8,8 +8,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 // CLK = 4, MOSI = 3, CS = 2
 U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, /* clock=*/4, /* data=*/3, /* cs=*/2);
 
-int voltageValues[128];  // 用于存储电压值的数组
-long totalVoltage = 0;  // 电压总和，用于计算平均值
+byte voltageValues[4][64];  // 用于存储电压值的数组
 
 void setup() {
   u8g2.begin();
@@ -18,59 +17,57 @@ void setup() {
   lcd.backlight();           // 打开背光
 
   // 初始化电压值数组
-  for (int i = 0; i < 128; i++) {
-    voltageValues[i] = 0;
+  for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < 64; i++) {
+      voltageValues[j][i] = 0;
+    }
   }
 }
 
 void loop() {
-  // 从A0引脚读取电压值
-  int voltage = analogRead(A0);
+  // 从A0到A3引脚读取电压值
+  for (int j = 0; j < 4; j++) {
+    byte voltage = analogRead(j) / 4;  // 除以4以将电压值减少到8位
 
-  // 将新的电压值添加到数组中，并移除最旧的电压值
-  for (int i = 0; i < 127; i++) {
-    voltageValues[i] = voltageValues[i + 1];
-  }
-  voltageValues[127] = voltage;
-
-  // 重新计算最大和最小电压值
-  int minVoltage = 1023;
-  int maxVoltage = 0;
-  for (int i = 0; i < 128; i++) {
-    if (voltageValues[i] < minVoltage) {
-      minVoltage = voltageValues[i];
+    // 将新的电压值添加到数组中，并移除最旧的电压值
+    for (int i = 0; i < 63; i++) {
+      voltageValues[j][i] = voltageValues[j][i + 1];
     }
-    if (voltageValues[i] > maxVoltage) {
-      maxVoltage = voltageValues[i];
-    }
+    voltageValues[j][63] = voltage;
   }
-
-  // 更新电压总和
-  totalVoltage -= voltageValues[0];
-  totalVoltage += voltage;
 
   // 在LCD12864上绘制信号图像
   u8g2.firstPage();
   do {
-    u8g2.drawFrame(0, 0, 128, 64);
-    for (int i = 1; i < 128; i++) {
-      u8g2.drawLine(i - 1, 64 - voltageValues[i - 1] / 16, i, 64 - voltageValues[i] / 16);
+    for (int j = 0; j < 4; j++) {
+      int x = (j % 2) * 64; // 计算区域的x坐标
+      int y = (j / 2) * 32; // 计算区域的y坐标
+
+      u8g2.drawFrame(x, y, 64, 32);
+      for (int i = 1; i < 64; i++) {
+        u8g2.drawLine(x + (i - 1), y + 32 - voltageValues[j][i - 1] / 8, x + i, y + 32 - voltageValues[j][i] / 8);
+      }
+      // Draw channel label
+      u8g2.setFont(u8g2_font_4x6_mf);
+      char ch[2] = {'A', '0'};
+      ch[1] = '0' + j;
+      u8g2.drawStr(x + 3, y + 8, ch);
     }
   } while (u8g2.nextPage());
 
   // 在LCD1602上显示参数
   lcd.setCursor(0, 0);
-  lcd.print("Val=");
-  lcd.print(voltage * (5.0 / 1023.0), 2);  // 转换为实际电压值
+  lcd.print("A0=");
+  lcd.print(voltageValues[0][63] * (5.0 / 255.0), 2);  // 转换为实际电压值
   lcd.setCursor(8, 0);
-  lcd.print("Avg=");
-  lcd.print((totalVoltage / 128.0) * (5.0 / 1023.0), 2);  // 计算并显示平均电压值
+  lcd.print("A1=");
+  lcd.print(voltageValues[1][63] * (5.0 / 255.0), 2);  // 转换为实际电压值
   lcd.setCursor(0, 1);
-  lcd.print("Min=");
-  lcd.print(minVoltage * (5.0 / 1023.0), 2);  // 转换为实际电压值
+  lcd.print("A2=");
+  lcd.print(voltageValues[2][63] * (5.0 / 255.0), 2);  // 转换为实际电压值
   lcd.setCursor(8, 1);
-  lcd.print("Max=");
-  lcd.print(maxVoltage * (5.0 / 1023.0), 2);  // 转换为实际电压值
+  lcd.print("A3=");
+  lcd.print(voltageValues[3][63] * (5.0 / 255.0), 2);  // 转换为实际电压值
 
   delay(20);
 }

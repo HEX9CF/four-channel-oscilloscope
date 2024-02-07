@@ -9,8 +9,6 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, /* clock=*/4, /* data=*/3, /* cs=*/2);
 
 int voltageValues[128];  // 用于存储电压值的数组
-int minVoltage = 1023;  // 最小电压值
-int maxVoltage = 0;  // 最大电压值
 long totalVoltage = 0;  // 电压总和，用于计算平均值
 
 void setup() {
@@ -29,23 +27,27 @@ void loop() {
   // 从A0引脚读取电压值
   int voltage = analogRead(A0);
 
-  // 更新最大和最小电压值
-  if (voltage < minVoltage) {
-    minVoltage = voltage;
-  }
-  if (voltage > maxVoltage) {
-    maxVoltage = voltage;
-  }
-
-  // 更新电压总和
-  totalVoltage -= voltageValues[0];
-  totalVoltage += voltage;
-
   // 将新的电压值添加到数组中，并移除最旧的电压值
   for (int i = 0; i < 127; i++) {
     voltageValues[i] = voltageValues[i + 1];
   }
   voltageValues[127] = voltage;
+
+  // 重新计算最大和最小电压值
+  int minVoltage = 1023;
+  int maxVoltage = 0;
+  for (int i = 0; i < 128; i++) {
+    if (voltageValues[i] < minVoltage) {
+      minVoltage = voltageValues[i];
+    }
+    if (voltageValues[i] > maxVoltage) {
+      maxVoltage = voltageValues[i];
+    }
+  }
+
+  // 更新电压总和
+  totalVoltage -= voltageValues[0];
+  totalVoltage += voltage;
 
   // 在LCD12864上绘制信号图像
   u8g2.firstPage();
@@ -69,7 +71,6 @@ void loop() {
   lcd.setCursor(8, 1);
   lcd.print("Max=");
   lcd.print(maxVoltage * (5.0 / 1023.0), 2);  // 转换为实际电压值
-
 
   delay(20);
 }

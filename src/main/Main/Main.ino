@@ -45,7 +45,12 @@ void loop() {
 
       u8g2.drawFrame(x, y, 64, 32);
       for (int i = 1; i < 64; i++) {
-        u8g2.drawLine(x + (i - 1), y + 32 - voltageValues[j][i - 1] / 8, x + i, y + 32 - voltageValues[j][i] / 8);
+        int x1 = x + (i - 1);
+        int y1 = y + 32 - voltageValues[j][i - 1] / 8;
+        int x2 = x + i;
+        int y2 = y + 32 - voltageValues[j][i] / 8;
+
+        u8g2.drawLine(x1, y1, x2, y2);
       }
       // Draw channel label
       u8g2.setFont(u8g2_font_4x6_mf);
@@ -57,17 +62,24 @@ void loop() {
 
   // 在LCD1602上显示参数
   lcd.setCursor(0, 0);
+  float a0 = voltageValues[0][63] * (5.0 / 255.0);  // 转换为实际电压值
   lcd.print("A0=");
-  lcd.print(voltageValues[0][63] * (5.0 / 255.0), 2);  // 转换为实际电压值
+  lcd.print(a0, 2);
+
   lcd.setCursor(8, 0);
+  float a1 = voltageValues[1][63] * (5.0 / 255.0);  // 转换为实际电压值
   lcd.print("A1=");
-  lcd.print(voltageValues[1][63] * (5.0 / 255.0), 2);  // 转换为实际电压值
+  lcd.print(a1, 2);
+
   lcd.setCursor(0, 1);
+  float a2 = voltageValues[2][63] * (5.0 / 255.0);  // 转换为实际电压值
   lcd.print("A2=");
-  lcd.print(voltageValues[2][63] * (5.0 / 255.0), 2);  // 转换为实际电压值
+  lcd.print(a2, 2);
+
   lcd.setCursor(8, 1);
+  float a3 = voltageValues[3][63] * (5.0 / 255.0);  // 转换为实际电压值
   lcd.print("A3=");
-  lcd.print(voltageValues[3][63] * (5.0 / 255.0), 2);  // 转换为实际电压值
+  lcd.print(a3, 2);
 
   delay(20);
 }

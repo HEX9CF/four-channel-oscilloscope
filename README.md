@@ -1,4 +1,4 @@
-# 基于Arduino的四通道示波器
+# 基于 Arduino UNO 的多通道示波器 DIY 制作项目
 
 ## 项目介绍
 

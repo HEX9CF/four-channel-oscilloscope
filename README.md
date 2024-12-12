@@ -157,7 +157,7 @@ Arduino Uno 开发板上有 6 个模拟输入引脚，标记为 A0 到 A5。这�
 - 如果你有任何问题或建议，欢迎提交 Issue。
 - 如果你有兴趣参与贡献代码，欢迎提交 Pull Request。
 
-## 许可证
+## 许可
 
 本项目采用 GPL-3.0 license 进行许可，详情请参阅 [LICENSE](LICENSE) 文件。
 
